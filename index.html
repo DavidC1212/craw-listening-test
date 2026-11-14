@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Listening test</title>
+<style>
+:root{
+  --bg:#eef1f0; --panel:#fbfcfb; --ink:#16211f; --muted:#5d6b68; --line:#cfd8d5;
+  --accent:#b8620a; --accent-ink:#ffffff; --live:#0f7a6a; --warn:#a33a2a;
+  --band1:#dfe9e6; --band2:#e9efed;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --bg:#101716; --panel:#182220; --ink:#e6eeeb; --muted:#93a39f; --line:#2c3b38;
+  --accent:#f0a04a; --accent-ink:#1b1206; --live:#4fd0b8; --warn:#f08a78;
+  --band1:#1e2b28; --band2:#1a2523; color-scheme:dark } }
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:960px;margin:0 auto;padding-inline:16px;padding-block:28px 56px;display:flex;flex-direction:column;gap:20px}
+h1{font-weight:700;font-size:clamp(24px,5vw,34px);line-height:1.15;margin:0}
+h2{font-weight:700;font-size:20px;margin:0}
+.sub{color:var(--muted);margin:0}
+p{margin:0;max-width:68ch}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;max-width:68ch}
+label.check{display:flex;gap:10px;align-items:flex-start;max-width:68ch}
+button{font:inherit;color:inherit;cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:4px;padding:9px 14px;font-weight:500}
+button:hover:not(:disabled){border-color:var(--ink)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--ink);color:var(--panel);border-color:var(--ink);font-weight:600}
+button.primary:hover:not(:disabled){background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+.prog{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ink);width:0}
+.console-wrap{overflow-x:auto}
+.console{display:grid;gap:0 6px;align-items:stretch;min-width:min-content}
+.scale{display:grid;grid-template-rows:repeat(5,1fr);height:260px;font-size:11px;color:var(--muted);text-align:right;padding-right:6px}
+.scale div{display:flex;align-items:center;justify-content:flex-end;border-top:1px solid var(--line)}
+.scale div:last-child{border-bottom:1px solid var(--line)}
+.strip{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:52px}
+.strip .well{height:260px;width:100%;display:flex;justify-content:center;align-items:center;border-radius:4px;
+  background:repeating-linear-gradient(to bottom,var(--band1) 0 20%,var(--band2) 20% 40%)}
+.strip.ref .well{background:none;border:1px dashed var(--line);color:var(--muted);font-size:12px;text-align:center;padding:6px}
+.strip input[type=range]{writing-mode:vertical-lr;direction:rtl;height:244px;width:28px;accent-color:var(--accent);margin:0}
+.val{font-family:var(--mono);font-size:15px;font-variant-numeric:tabular-nums;min-height:22px}
+.val.unset{color:var(--muted)}
+.play{width:100%;padding:10px 4px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.1}
+.play small{font-weight:400;font-size:11px;color:var(--muted)}
+.play.on{background:var(--live);border-color:var(--live);color:var(--panel)}
+.play.on small{color:inherit}
+.play .dot{width:6px;height:6px;border-radius:50%;background:var(--line)}
+.play.heard .dot{background:var(--live)}
+.play.on .dot{background:var(--panel)}
+.seek{height:22px;background:var(--band1);border-radius:3px;position:relative;cursor:ew-resize;overflow:hidden;touch-action:none;user-select:none}
+.seek i{position:absolute;inset:0 auto 0 0;background:var(--accent);opacity:.85;width:0;border-right:3px solid var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg label{cursor:pointer}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:block;padding:8px 14px;font-weight:500}
+.seg input:checked+span{background:var(--ink);color:var(--panel)}
+.note{font-size:13px;color:var(--muted)}
+.note.warn,.warn{color:var(--warn)}
+.note.ok,.ok{color:var(--live)}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--accent);color:var(--accent-ink)}
+kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:3px;padding:0 5px;background:var(--panel)}
+@media (max-width:520px){ .panel{padding:14px} .scale{font-size:10px} }
+@media (prefers-reduced-motion:no-preference){ .prog i{transition:width .12s linear} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="stack" style="gap:6px">
+    <h1 id="title">Listening test</h1>
+    <p class="sub" id="subtitle"></p>
+  </header>
+
+  <section class="panel" id="intro">
+    <h2>Before you start</h2>
+    <ol id="instructions"></ol>
+    <p class="note" id="advice"></p>
+    <div class="stack" style="gap:6px"><strong>Are you wearing headphones?</strong>
+      <div class="seg" role="radiogroup" aria-label="Headphones"><label><input type="radio" name="hp" id="hp-yes" value="yes"><span>Yes</span></label><label><input type="radio" name="hp" id="hp-no" value="no"><span>No</span></label></div></div>
+    <label class="check" for="consent"><input type="checkbox" id="consent"><span id="consent-text"></span></label>
+    <div class="row">
+      <button class="primary" id="start" disabled>Start</button>
+      <button id="resume" hidden>Resume where I stopped</button>
+      <span class="note" id="intro-note">Loading…</span>
+    </div>
+  </section>
+
+  <section class="panel" id="trial" hidden>
+    <div class="head">
+      <h2 id="t-title">Trial 1</h2>
+      <span class="note" id="t-status">loading audio…</span>
+    </div>
+    <div class="prog"><i id="t-prog"></i></div>
+    <p class="note" id="practice-note" hidden><span class="badge">Practice</span> This round is for getting used to the controls; it is not recorded.</p>
+    <div class="console-wrap"><div class="console" id="console"></div></div>
+    <div class="stack">
+      <div class="seek" id="seek" title="Drag to move within the excerpt"><i id="seek-fill"></i></div>
+      <div class="row">
+        <button id="stop">Stop</button>
+        <div class="seg" role="radiogroup" aria-label="Playback mode"><label><input type="radio" name="mode" id="mode-loop" checked><span>Loop</span></label><label><input type="radio" name="mode" id="mode-once"><span>Once</span></label></div>
+        <span class="note" id="keys"></span>
+      </div>
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <div class="stack" style="gap:4px"><span class="note" id="t-hint"></span><span class="note" id="send-status"></span></div>
+      <div class="row"><button id="quit">Stop here</button><button class="primary" id="next" disabled>Save and next</button></div>
+    </div>
+  </section>
+
+  <section class="panel" id="bad" hidden>
+    <h2>This link is incomplete</h2>
+    <p>Please use the full link you were sent.</p>
+  </section>
+
+  <section class="panel" id="done" hidden>
+    <h2>Done!</h2>
+    <p id="done-score" style="font-size:18px;font-weight:600"></p>
+    <p id="done-msg"></p>
+    <p class="note" id="done-count"></p>
+    <div class="row" id="fallback" hidden>
+      <button id="retry">Try sending again</button>
+      <button class="primary" id="download">Download my answers</button>
+    </div>
+    <p class="note" id="fallback-note" hidden></p>
+  </section>
+</div>
+
+<script>
+"use strict";
+/* Everything project-specific comes from test.json and items.json, written by
+   the build step. Do not edit this file; edit the settings and rebuild. */
+const LETTERS = "ABCDEFGHIJKL";
+const $ = id => document.getElementById(id);
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const rid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2));
+
+let CFG = null, ITEMS = null, S = null, ui = null, LS_KEY = "", BLOCK = "";
+const PRACTICE_GROUP = "gp";                         // items of the practice round; never sent
+const blockItems = () => ITEMS.map((it,i)=>i).filter(i=>ITEMS[i].g==="g"+BLOCK);
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){} }
+function load(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)); }catch(e){ return null; } }
+
+/* ---------------- audio ---------------- */
+let ctx=null, master=null, cache=new Map(), cur=null;
+function ensureCtx(){ if(!ctx){ ctx=new (window.AudioContext||window.webkitAudioContext)(); master=ctx.createGain(); master.connect(ctx.destination);} if(ctx.state==="suspended") ctx.resume(); }
+async function fetchBuf(h){
+  const r=await fetch("stim/"+h+".wav?v="+encodeURIComponent(CFG.built));   // build stamp: no stale cached audio
+  if(!r.ok) throw new Error("audio "+r.status);
+  return await ctx.decodeAudioData(await r.arrayBuffer());
+}
+async function loadItem(i){
+  if(cache.has(i)) return cache.get(i);
+  const it=ITEMS[i];
+  const p=(async()=>{
+    ensureCtx(); const out={REF: await fetchBuf(it.ref)};
+    await Promise.all(Object.entries(it.v).map(async ([c,h])=>{ out[c]=await fetchBuf(h); }));
+    return out;
+  })();
+  cache.set(i,p); p.catch(()=>cache.delete(i)); return p;
+}
+function dur(){ return ui&&ui.audio?ui.audio.REF.duration:1; }
+function pos(){ if(!cur) return ui?ui.offset:0; return Math.min(cur.buf.duration, cur.offset+(ctx.currentTime-cur.startedAt)); }
+function halt(keep){
+  if(cur){ const c=cur; cur=null; if(ui) ui.offset=keep?Math.min(c.buf.duration,c.offset+(ctx.currentTime-c.startedAt)):0;
+    c.src.onended=null; const t=ctx.currentTime; c.gain.gain.setValueAtTime(c.gain.gain.value,t); c.gain.gain.linearRampToValueAtTime(0,t+0.02); try{c.src.stop(t+0.03);}catch(e){} }
+  else if(ui&&!keep) ui.offset=0;
+}
+function playKey(key){
+  if(!ui||!ui.audio) return; ensureCtx();
+  if($("mode-once").checked){ halt(false); startAt(key,0); return; }
+  if(cur&&cur.key===key){ halt(true); paint(); return; }
+  halt(true); startAt(key, ui.offset>=dur()-0.05?0:ui.offset);
+}
+function startAt(key, offset){
+  const buf = key==="REF"?ui.audio.REF:ui.audio[ui.order[key]];
+  const src=ctx.createBufferSource(), g=ctx.createGain(); src.buffer=buf;
+  const t=ctx.currentTime; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(1,t+0.02);
+  src.connect(g); g.connect(master); src.start(t, Math.min(offset, buf.duration-0.01));
+  cur={key,src,gain:g,buf,startedAt:t,offset}; ui.last=key;
+  src.onended=()=>{ if(!cur||cur.src!==src) return; cur=null; ui.offset=0; if($("mode-loop").checked) startAt(key,0); paint(); };
+  if(key==="REF") ui.heardRef=true; else ui.heard[key]=true;
+  paint();
+}
+/* ---------------- trial ---------------- */
+function buildConsole(n){
+  const el=$("console"); el.innerHTML=""; el.style.gridTemplateColumns="auto repeat("+(n+1)+",minmax(52px,1fr))";
+  const sc=document.createElement("div"); sc.innerHTML='<div style="height:54px"></div><div class="scale"><div>Excellent</div><div>Good</div><div>Fair</div><div>Poor</div><div>Bad</div></div>';
+  el.appendChild(sc);
+  const mk=(key,label,sub)=>{
+    const s=document.createElement("div"); s.className="strip"+(key==="REF"?" ref":"");
+    const b=document.createElement("button"); b.className="play"; b.id="play-"+key; b.type="button";
+    b.innerHTML='<span>'+label+'</span><small>'+sub+'</small><span class="dot"></span>'; b.onclick=()=>playKey(key);
+    s.appendChild(b);
+    const w=document.createElement("div"); w.className="well";
+    if(key==="REF"){ w.textContent="original"; s.appendChild(w); s.appendChild(Object.assign(document.createElement("div"),{className:"val"})); }
+    else{
+      const r=document.createElement("input"); r.type="range"; r.min=0; r.max=100; r.step=1; r.value=0; r.id="fader-"+key; r.setAttribute("aria-label","Score for version "+label);
+      const v=document.createElement("div"); v.className="val unset"; v.textContent="–";
+      const touch=()=>{ ui.touched[key]=true; ui.scores[key]=+r.value; v.textContent=r.value; v.classList.remove("unset"); paint(); };
+      r.addEventListener("input",touch); r.addEventListener("pointerdown",touch); r.addEventListener("keydown",e=>{ if(e.key.startsWith("Arrow")) setTimeout(touch,0); });
+      w.appendChild(r); s.appendChild(w); s.appendChild(v);
+    }
+    el.appendChild(s);
+  };
+  mk("REF","Ref","key R");
+  for(let i=0;i<n;i++) mk(i,LETTERS[i],i<9?"key "+(i+1):"");
+  $("keys").innerHTML="<kbd>R</kbd> reference · <kbd>1</kbd>–<kbd>"+Math.min(n,9)+"</kbd> versions · <kbd>Space</kbd> stop";
+}
+function paint(){
+  if(!ui) return; const n=ui.order.length, idx=[...Array(n).keys()];
+  for(const k of ["REF",...idx]){ const b=$("play-"+k); if(!b) continue; b.classList.toggle("on",!!cur&&cur.key===k); if(k!=="REF") b.classList.toggle("heard",!!ui.heard[k]); }
+  const ready=idx.every(i=>ui.heard[i]&&ui.touched[i]);
+  $("next").disabled=!ready||!ui.audio;
+  const hint=$("t-hint"); hint.classList.remove("warn");
+  if(!ready){ const h=idx.filter(i=>!ui.heard[i]).map(i=>LETTERS[i]), t=idx.filter(i=>!ui.touched[i]).map(i=>LETTERS[i]);
+    hint.textContent=(h.length?"Not played yet: "+h.join(", ")+". ":"")+(t.length?"Not rated yet: "+t.join(", ")+".":""); }
+  else if(Math.max(...ui.scores)<90){ hint.textContent="One version is the reference itself, but none is rated 90 or above yet."; hint.classList.add("warn"); }
+  else hint.textContent="All rated. Adjust if you like, then continue.";
+}
+function tick(){ if(ui&&ui.audio){ $("seek-fill").style.width=(100*pos()/dur()).toFixed(1)+"%"; } requestAnimationFrame(tick); }
+function realCount(){ return S.list.filter(t=>!t.practice).length; }
+function realDone(){ return S.list.slice(0,S.idx).filter(t=>!t.practice).length; }
+async function showTrial(){
+  halt(false);
+  const t=S.list[S.idx], n=t.order.length;
+  ui={item:t.item, order:t.order, practice:!!t.practice, heard:Array(n).fill(false), heardRef:false, touched:Array(n).fill(false), scores:Array(n).fill(0), offset:0, audio:null, t0:Date.now()};
+  const nReal=realCount(), done=realDone();
+  $("t-title").textContent=t.practice?"Practice round":("Round "+(done+1)+" of "+nReal);
+  $("practice-note").hidden=!t.practice;
+  $("t-prog").style.width=(100*done/Math.max(1,nReal))+"%";
+  $("next").textContent=t.practice?"Finish practice":(S.idx===S.list.length-1?"Save and finish":"Save and next");
+  $("quit").hidden=CFG.mode!=="open"||t.practice;
+  $("t-status").textContent="loading audio…";
+  buildConsole(n); paint();
+  try{
+    const a=await loadItem(t.item); if(!ui||ui.item!==t.item) return;
+    ui.audio=a; $("t-status").textContent=""; paint();
+    if(S.idx+1<S.list.length) loadItem(S.list[S.idx+1].item).catch(()=>{});
+  }catch(e){ $("t-status").textContent="The audio did not load. Check your connection and reload the page; your progress is kept."; }
+}
+function commitTrial(){
+  const it=ITEMS[ui.item], t=S.list[S.idx];
+  if(!t.practice){
+    const a={trial:realDone()+1, group:it.g, item:it.i, order:ui.order.join(" "),
+      scores:Object.fromEntries(ui.order.map((c,i)=>[c,ui.scores[i]])), heard_reference:ui.heardRef,
+      seconds:Math.round((Date.now()-ui.t0)/1000)};
+    S.answers.push(a); S.pending.push(a);
+  }
+  S.idx++; save(); if(CFG.endpoint) flush();
+  if(S.idx>=S.list.length){ halt(false); ui=null; finish(); } else showTrial();
+}
+function begin(){
+  // every item once, groups interleaved round by round, so stopping early still leaves a
+  // balanced set: each round holds one item of each group in random order
+  let order=shuffle(blockItems());
+  if(CFG.max_trials) order=order.slice(0,CFG.max_trials);
+  const pr=ITEMS.map((it,i)=>i).filter(i=>ITEMS[i].g===PRACTICE_GROUP);
+  const practice=Array.from({length:CFG.practice_trials||0},()=>pr[Math.floor(Math.random()*pr.length)]);
+  const mk=(i,pr)=>({item:i, practice:pr, order:shuffle(Object.keys(ITEMS[i].v))});
+  S={session:rid(), test_id:CFG.test_id, block:BLOCK, headphones:($("hp-yes").checked?"yes":"no"), started:new Date().toISOString(),
+     list:[...practice.map(i=>mk(i,true)), ...order.map(i=>mk(i,false))],
+     idx:0, answers:[], pending:[], done:false};
+  save(); $("intro").hidden=true; $("trial").hidden=false; showTrial();
+}
+/* ---------------- submission: every trial is sent as soon as it is rated ---------------- */
+let sending=false, lastError="";
+function body(answers){
+  return JSON.stringify({token:CFG.token, test_id:S.test_id, block:S.block, headphones:S.headphones, session:S.session, started:S.started,
+    user_agent:navigator.userAgent.slice(0,200), screen:(window.screen?screen.width+"x"+screen.height:""), answers});
+}
+async function flush(){
+  if(sending||!S||!S.pending.length||!CFG.endpoint) return true;
+  sending=true; const batch=S.pending.slice(0,100);
+  try{
+    // text/plain avoids a CORS preflight, which Google Apps Script web apps do not answer
+    const r=await fetch(CFG.endpoint,{method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:body(batch), keepalive:true});
+    const txt=await r.text();
+    if(!r.ok||!/^ok/.test(txt)) throw new Error(txt.slice(0,80)||("HTTP "+r.status));
+    S.pending=S.pending.filter(a=>!batch.includes(a)); save(); lastError=""; showSend(); return true;
+  }catch(e){ lastError=(e&&e.message)||String(e); showSend(); return false; }
+  finally{ sending=false; }
+}
+function showSend(){
+  const el=$("send-status"); if(!el||!S||!CFG.endpoint) return;
+  if(S.pending.length){ el.textContent=S.pending.length+" answer"+(S.pending.length>1?"s":"")+" not sent yet"+(lastError?" ("+lastError+")":"")+"; retrying after the next trial."; el.className="note warn"; }
+  else if(S.answers.length){ el.textContent="All "+S.answers.length+" answers saved."; el.className="note ok"; }
+  else el.textContent="";
+}
+async function finish(){
+  halt(false); ui=null; S.done=true; save();
+  $("trial").hidden=true; $("intro").hidden=true; $("done").hidden=false; window.scrollTo(0,0);
+  const found=S.answers.filter(a=>a.scores[CFG.reference_code]>=90).length;
+  $("done-score").textContent="You spotted the hidden original in "+found+" of "+realCount()+" rounds.";
+  $("done-count").textContent="You rated "+S.answers.length+" round"+(S.answers.length===1?"":"s")+". Session "+S.session.slice(0,8)+".";
+  $("fallback").hidden=true; $("fallback-note").hidden=true; $("retry").hidden=!CFG.endpoint;
+  if(!S.answers.length){ $("done-msg").textContent=CFG.thank_you; return; }
+  if(!CFG.endpoint){   // offline mode: the listener hands over a file
+    $("done-msg").textContent="Please download your answers and give the file to the person running this test.";
+    $("fallback").hidden=false; $("fallback-note").hidden=false;
+    $("fallback-note").textContent="The file holds only your ratings and a random session number. "+CFG.thank_you;
+    return;
+  }
+  $("done-msg").textContent="Sending your answers…";
+  for(let k=0;k<3&&S.pending.length;k++){ await flush(); if(S.pending.length) await new Promise(r=>setTimeout(r,1500)); }
+  if(!S.pending.length){ $("done-msg").textContent="All your answers were received. "+CFG.thank_you; $("done-msg").className="ok"; }
+  else{ $("done-msg").textContent=S.pending.length+" of your answers could not be sent"+(lastError?" ("+lastError+")":"")+".";
+    $("fallback").hidden=false; $("fallback-note").hidden=false;
+    $("fallback-note").textContent="If sending keeps failing, download the file (it holds only the answers that were not sent) and email it to the person who sent you this test."; }
+}
+function download(){
+  // online: only what the sheet has not acknowledged, so adding the file cannot duplicate rows
+  const blob=new Blob([body(CFG.endpoint?S.pending:S.answers)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="answers-"+S.test_id+"-"+S.session.slice(0,8)+".json";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+/* ---------------- wiring ---------------- */
+const canStart=()=>{ $("start").disabled=!(ITEMS&&$("consent").checked&&($("hp-yes").checked||$("hp-no").checked)); };
+$("consent").addEventListener("change",canStart);
+$("hp-yes").addEventListener("change",canStart); $("hp-no").addEventListener("change",canStart);
+$("start").onclick=()=>{ ensureCtx(); begin(); };
+$("resume").onclick=()=>{ ensureCtx(); $("intro").hidden=true; $("trial").hidden=false; showTrial(); };
+$("next").onclick=commitTrial;
+$("stop").onclick=()=>{ halt(false); paint(); };
+$("retry").onclick=finish; $("download").onclick=download;
+$("quit").onclick=()=>{ if(confirm("End the test here? Your answers so far are kept.")) finish(); };
+window.addEventListener("pagehide",()=>{ if(S&&S.pending.length) flush(); });
+let drag=null;
+const seekTo=e=>{ const r=$("seek").getBoundingClientRect(); ui.offset=Math.max(0,Math.min(0.995,(e.clientX-r.left)/r.width))*dur(); };
+$("seek").addEventListener("pointerdown",e=>{ if(!ui||!ui.audio) return; e.preventDefault(); ensureCtx(); drag={key:cur?cur.key:(ui.last??null)}; halt(true); seekTo(e); try{ $("seek").setPointerCapture(e.pointerId); }catch(_){} paint(); });
+$("seek").addEventListener("pointermove",e=>{ if(drag&&ui&&ui.audio) seekTo(e); });
+const endDrag=()=>{ if(!drag) return; const k=drag.key; drag=null; if(ui&&ui.audio&&k!==null&&k!==undefined) startAt(k,ui.offset); };
+$("seek").addEventListener("pointerup",endDrag); $("seek").addEventListener("pointercancel",endDrag);
+document.addEventListener("keydown",e=>{ if($("trial").hidden||!ui) return;
+  if(e.target&&e.target.type==="range"&&e.key.startsWith("Arrow")) return;
+  if(e.key==="r"||e.key==="R"){ playKey("REF"); e.preventDefault(); }
+  else if(/^[1-9]$/.test(e.key)&&+e.key<=ui.order.length){ playKey(+e.key-1); e.preventDefault(); }
+  else if(e.key===" "){ halt(false); paint(); e.preventDefault(); } });
+function fillTexts(){
+  document.title=CFG.title; $("title").textContent=CFG.title; $("subtitle").textContent=CFG.subtitle||"";
+  const ol=$("instructions"); ol.innerHTML="";
+  for(const s of CFG.instructions){ const li=document.createElement("li"); li.textContent=s; ol.appendChild(li); }
+  $("advice").textContent=CFG.listening_advice||""; $("consent-text").textContent=CFG.consent;
+}
+(async function boot(){
+  if(location.protocol==="file:"){ $("intro-note").textContent="This page must be opened from a web address, not as a file."; return; }
+  BLOCK=new URLSearchParams(location.search).get("b")||"";
+  const badLink=()=>{ $("intro").hidden=true; $("bad").hidden=false; };
+  if(BLOCK!=="1"&&BLOCK!=="2"){ badLink(); return; }
+  try{
+    CFG=await (await fetch("test.json",{cache:"no-store"})).json();
+    ITEMS=await (await fetch("items.json?v="+encodeURIComponent(CFG.built))).json();
+  }catch(e){ $("intro-note").textContent="The test files did not load. Please reload the page."; return; }
+  if(!blockItems().length){ badLink(); return; }
+  LS_KEY="lt-"+CFG.test_id+"-"+CFG.built+"-b"+BLOCK;
+  fillTexts();
+  $("intro-note").textContent=CFG.endpoint?"":"Offline mode: you will download your answers at the end.";
+  const p=load();
+  if(p&&p.list&&p.answers&&!p.done){ S=p; S.pending=S.pending||[]; flush();
+    if(S.idx>0&&S.idx<S.list.length){ $("resume").hidden=false; $("intro-note").textContent="You have started this test in this browser. Resume, or press Start for a new session."; } }
+  canStart(); requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

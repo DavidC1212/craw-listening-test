@@ -1,0 +1,25 @@
+{
+ "test_id": "aqtest-v2",
+ "title": "A short listening game, about 15 minutes.",
+ "subtitle": "Headphones on, quiet room.",
+ "instructions": [
+  "Play the Reference: it is the original.",
+  "Slide each version toward 100 if it sounds the same as the Reference, lower if it does not.",
+  "One version is the original in disguise: give it 100."
+ ],
+ "listening_advice": "Set a comfortable volume on the Reference in the first round and do not change it afterwards.",
+ "consent": "I understand that this is an anonymous listening test about audio quality. I take part voluntarily and can stop at any time by closing this page. My ratings are stored under a random session number, together with the browser name and screen size. No names, e-mail addresses or other personal data are collected, and the results are used for research only.",
+ "thank_you": "Thank you for taking part. You can close this page.",
+ "endpoint": "https://script.google.com/macros/s/AKfycbwUpPiG6zjvOrFFBs4VaOm-EQR2zNcZ6AMvxlZi4zID-qmtI_RE3hlHFFvCNiAgPxwd/exec",
+ "token": "61ac50269478899151cc48d612fa21d6",
+ "mode": "fixed",
+ "max_trials": 6,
+ "practice_trials": 1,
+ "reference_code": "c8bf66ae3",
+ "groups": [
+  "g1",
+  "g2",
+  "gp"
+ ],
+ "built": "2026-11-14T10:17:24Z"
+}
