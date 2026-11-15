@@ -116,11 +116,6 @@ kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-r
     </div>
   </section>
 
-  <section class="panel" id="bad" hidden>
-    <h2>This link is incomplete</h2>
-    <p>Please use the full link you were sent.</p>
-  </section>
-
   <section class="panel" id="done" hidden>
     <h2>Done!</h2>
     <p id="done-score" style="font-size:18px;font-weight:600"></p>
@@ -143,9 +138,9 @@ const $ = id => document.getElementById(id);
 const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 const rid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2));
 
-let CFG = null, ITEMS = null, S = null, ui = null, LS_KEY = "", BLOCK = "";
+let CFG = null, ITEMS = null, S = null, ui = null, LS_KEY = "", BLOCK = "0";   // one pool, no blocks: the constant "0" keeps the row shape of the receiver
 const PRACTICE_GROUP = "gp";                         // items of the practice round; never sent
-const blockItems = () => ITEMS.map((it,i)=>i).filter(i=>ITEMS[i].g==="g"+BLOCK);
+const blockItems = () => ITEMS.map((it,i)=>i).filter(i=>ITEMS[i].g!==PRACTICE_GROUP);   // all 20 clips (groups g1+g2 merged)
 function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){} }
 function load(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)); }catch(e){ return null; } }
 
@@ -353,15 +348,11 @@ function fillTexts(){
 }
 (async function boot(){
   if(location.protocol==="file:"){ $("intro-note").textContent="This page must be opened from a web address, not as a file."; return; }
-  BLOCK=new URLSearchParams(location.search).get("b")||"";
-  const badLink=()=>{ $("intro").hidden=true; $("bad").hidden=false; };
-  if(BLOCK!=="1"&&BLOCK!=="2"){ badLink(); return; }
   try{
     CFG=await (await fetch("test.json",{cache:"no-store"})).json();
     ITEMS=await (await fetch("items.json?v="+encodeURIComponent(CFG.built))).json();
   }catch(e){ $("intro-note").textContent="The test files did not load. Please reload the page."; return; }
-  if(!blockItems().length){ badLink(); return; }
-  LS_KEY="lt-"+CFG.test_id+"-"+CFG.built+"-b"+BLOCK;
+  LS_KEY="lt-"+CFG.test_id+"-"+CFG.built;
   fillTexts();
   $("intro-note").textContent=CFG.endpoint?"":"Offline mode: you will download your answers at the end.";
   const p=load();
